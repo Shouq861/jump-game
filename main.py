@@ -28,8 +28,8 @@ player_image = pygame.transform.scale(player_image, (50, 50))
 
 # تحميل العقبتين
 obstacle_images = [
-    pygame.transform.scale(pygame.image.load("A_2D_digital_illustration_features_a_wooden_crate_.png"), (50, 50)),
-    pygame.transform.scale(pygame.image.load("A_2D_digital_illustration_features_a_treasure_ches.png"), (50, 50)),
+    pygame.transform.scale(pygame.image.load("crate.png"), (50, 50)),
+    pygame.transform.scale(pygame.image.load("chest.png"), (50, 50)),
 ]
 
 # تحميل صوت القفز (اختياري)
