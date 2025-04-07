@@ -166,6 +166,7 @@ while running:
         restart_text = font.render("Restart", True, BLACK)
         screen.blit(restart_text, (restart_button.x + 40, restart_button.y + 10))
 
+
     pygame.display.flip()
     clock.tick(60)
 
