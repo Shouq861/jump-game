@@ -7,14 +7,17 @@ WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("لعبة القفز")
 
-WHITE = (255, 255, 255)
 BROWN = (139, 69, 19)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
 font = pygame.font.SysFont(None, 36)
 
-# تحميل صورة اللاعب
+# تحميل صورة الخلفية وتعديل حجمها
+background = pygame.image.load("background.jpg")
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
+# تحميل صورة اللاعب وتعديل حجمها
 player_image = pygame.image.load("player.png")
 player_image = pygame.transform.scale(player_image, (50, 50))
 player_rect = player_image.get_rect()
@@ -26,6 +29,7 @@ gravity = 0.8
 
 ground_y = 350
 
+# إعداد العقبة
 obstacle = pygame.Rect(800, ground_y - 50, 50, 50)
 obstacle_speed = 5
 
@@ -37,7 +41,7 @@ running = True
 jump_timer = 0
 
 while running:
-    screen.fill(WHITE)
+    screen.blit(background, (0, 0))  # رسم الخلفية
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -73,10 +77,16 @@ while running:
         running = False
         continue
 
+    # رسم الأرض
     pygame.draw.rect(screen, BROWN, (0, ground_y, WIDTH, HEIGHT - ground_y))
+
+    # رسم اللاعب
     screen.blit(player_image, player_rect)
+
+    # رسم العقبة
     pygame.draw.rect(screen, RED, obstacle)
 
+    # رسم النقاط
     score_text = font.render("نقاطك: " + str(score), True, BLACK)
     screen.blit(score_text, (10, 10))
 
