@@ -43,7 +43,7 @@ is_jumping = False
 gravity = 0.8
 score = 0
 scored = False
-jump_timer = 0
+
 clock = pygame.time.Clock()
 running = True
 
@@ -55,12 +55,19 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    jump_timer += clock.get_time()
-    if jump_timer > 2000 and not is_jumping:
-        is_jumping = True
-        player_velocity = -15
-        jump_sound.play()  # تشغيل صوت القفز
-        jump_timer = 0
+        # الضغط على زر المسافة
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if not is_jumping:
+                is_jumping = True
+                player_velocity = -15
+                jump_sound.play()
+
+        # الضغط على الشاشة أو الماوس
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if not is_jumping:
+                is_jumping = True
+                player_velocity = -15
+                jump_sound.play()
 
     if is_jumping:
         player_rect.y += int(player_velocity)
