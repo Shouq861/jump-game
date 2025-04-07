@@ -2,15 +2,19 @@ import pygame
 import sys
 
 pygame.init()
+pygame.mixer.init()
 
+# إعداد الشاشة
 WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("لعبة القفز")
+pygame.display.set_caption("لعبة زورو القفاز")
 
+# الألوان
 BROWN = (139, 69, 19)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
+# الخط
 font = pygame.font.SysFont(None, 36)
 
 # تحميل صورة الخلفية وتعديل حجمها
@@ -23,23 +27,27 @@ player_image = pygame.transform.scale(player_image, (50, 50))
 player_rect = player_image.get_rect()
 player_rect.topleft = (100, 300)
 
-player_velocity = 0
-is_jumping = False
-gravity = 0.8
+# تحميل صوت القفز
+jump_sound = pygame.mixer.Sound("jump.wav")
 
+# إعداد الأرض
 ground_y = 350
 
 # إعداد العقبة
 obstacle = pygame.Rect(800, ground_y - 50, 50, 50)
 obstacle_speed = 5
 
+# متغيرات اللعب
+player_velocity = 0
+is_jumping = False
+gravity = 0.8
 score = 0
 scored = False
-
+jump_timer = 0
 clock = pygame.time.Clock()
 running = True
-jump_timer = 0
 
+# الحلقة الرئيسية
 while running:
     screen.blit(background, (0, 0))  # رسم الخلفية
 
@@ -51,6 +59,7 @@ while running:
     if jump_timer > 2000 and not is_jumping:
         is_jumping = True
         player_velocity = -15
+        jump_sound.play()  # تشغيل صوت القفز
         jump_timer = 0
 
     if is_jumping:
