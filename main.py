@@ -49,7 +49,7 @@ ground_y = 350
 clock = pygame.time.Clock()
 
 def reset_game():
-    global player_rect, obstacle_rect, obstacle_image, player_velocity, is_jumping, score, scored
+    global player_rect, obstacle_rect, obstacle_image, player_velocity, is_jumping, score, scored, difficulty_level
     player_rect = player_image.get_rect()
     player_rect.topleft = (100, 300)
 
@@ -61,9 +61,14 @@ def reset_game():
     score = 0
     scored = False
 
+    # زيادة مستوى الصعوبة مع تقدم اللعبة
+    difficulty_level = 1
+    obstacle_speed = 5 + difficulty_level  # سرعة العقبات تتزايد مع المستوى
+
 reset_game()
 running = True
 game_over = False
+time_elapsed = 0
 
 while running:
     screen.blit(background, (0, 0))
@@ -93,6 +98,11 @@ while running:
                     game_over = False
 
     if not game_over:
+        # زيادة مستوى الصعوبة مع تقدم اللعبة
+        if score % 10 == 0 and score > 0:
+            difficulty_level += 1  # زيادة مستوى الصعوبة
+        obstacle_speed = 5 + difficulty_level  # سرعة العقبات
+
         # تأثير القفز - تغيير الشفافية عند القفز
         if is_jumping:
             player_image.set_alpha(150)  # تأثير شفاف عند القفز
@@ -107,7 +117,7 @@ while running:
                 is_jumping = False
 
         # تحريك العائق
-        obstacle_rect.x -= 5
+        obstacle_rect.x -= obstacle_speed
         if obstacle_rect.right < 0:
             obstacle_rect.left = WIDTH
             obstacle_image = random.choice(obstacle_images)
@@ -128,6 +138,9 @@ while running:
                 pygame.display.flip()
                 pygame.time.delay(30)
 
+    # حساب الوقت المنقضي
+    time_elapsed = pygame.time.get_ticks() // 1000  # الوقت المنقضي بالثواني
+
     # الأرض
     pygame.draw.rect(screen, BROWN, (0, ground_y, WIDTH, HEIGHT - ground_y))
 
@@ -136,11 +149,15 @@ while running:
     screen.blit(obstacle_image, obstacle_rect)
 
     # النقاط
-    score_text = font.render("Your Score: " + str(score), True, BLACK)
+    score_text = font.render(f"Your Score: {score}", True, BLACK)
     screen.blit(score_text, (10, 10))
 
+    # عرض الوقت المنقضي
+    time_text = font.render(f"Time: {time_elapsed} s", True, BLACK)
+    screen.blit(time_text, (WIDTH - 150, 10))
+
     if game_over:
-        game_over_text = font.render("Game Over! Your Score: " + str(score), True, BLACK)
+        game_over_text = font.render(f"Game Over! Your Score: {score}", True, BLACK)
         screen.blit(game_over_text, (WIDTH // 2 - 150, HEIGHT // 2 - 60))
 
         restart_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
