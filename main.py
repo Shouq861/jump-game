@@ -8,7 +8,7 @@ pygame.mixer.init()
 # إعداد الشاشة
 WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("لعبة زورو القفاز")
+pygame.display.set_caption("Zorro Jump Game")
 
 # الألوان
 BROWN = (139, 69, 19)
@@ -32,11 +32,16 @@ obstacle_images = [
     pygame.transform.scale(pygame.image.load("chest.png"), (50, 50)),
 ]
 
-# تحميل صوت القفز (اختياري)
+# تحميل صوت القفز وصوت التصادم (اختياري)
 try:
     jump_sound = pygame.mixer.Sound("jump.wav")
 except:
     jump_sound = None
+
+try:
+    crash_sound = pygame.mixer.Sound("crash.wav")
+except:
+    crash_sound = None
 
 # إعداد الأرض
 ground_y = 350
@@ -88,6 +93,12 @@ while running:
                     game_over = False
 
     if not game_over:
+        # تأثير القفز - تغيير الشفافية عند القفز
+        if is_jumping:
+            player_image.set_alpha(150)  # تأثير شفاف عند القفز
+        else:
+            player_image.set_alpha(255)
+
         if is_jumping:
             player_rect.y += int(player_velocity)
             player_velocity += 0.8
@@ -95,18 +106,27 @@ while running:
                 player_rect.y = ground_y - player_rect.height
                 is_jumping = False
 
+        # تحريك العائق
         obstacle_rect.x -= 5
         if obstacle_rect.right < 0:
             obstacle_rect.left = WIDTH
             obstacle_image = random.choice(obstacle_images)
             scored = False
 
+        # زيادة النقاط عند تجاوز العائق
         if not scored and obstacle_rect.right < player_rect.left:
             score += 1
             scored = True
 
+        # تصادم مع العائق
         if player_rect.colliderect(obstacle_rect):
+            if crash_sound:
+                crash_sound.play()
             game_over = True
+            for _ in range(5):  # اهتزاز الشاشة عند التصادم
+                screen.fill(random.choice([BROWN, BLACK]))  # تغيير اللون عشوائيًا
+                pygame.display.flip()
+                pygame.time.delay(30)
 
     # الأرض
     pygame.draw.rect(screen, BROWN, (0, ground_y, WIDTH, HEIGHT - ground_y))
@@ -116,17 +136,17 @@ while running:
     screen.blit(obstacle_image, obstacle_rect)
 
     # النقاط
-    score_text = font.render("نقاطك: " + str(score), True, BLACK)
+    score_text = font.render("Your Score: " + str(score), True, BLACK)
     screen.blit(score_text, (10, 10))
 
     if game_over:
-        game_over_text = font.render("Game Over! نقاطك: " + str(score), True, BLACK)
+        game_over_text = font.render("Game Over! Your Score: " + str(score), True, BLACK)
         screen.blit(game_over_text, (WIDTH // 2 - 150, HEIGHT // 2 - 60))
 
         restart_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
         pygame.draw.rect(screen, WHITE, restart_button)
         pygame.draw.rect(screen, BLACK, restart_button, 2)
-        restart_text = font.render("أعد اللعب", True, BLACK)
+        restart_text = font.render("Restart", True, BLACK)
         screen.blit(restart_text, (restart_button.x + 40, restart_button.y + 10))
 
     pygame.display.flip()
