@@ -1,127 +1,116 @@
 import pygame
-import sys
+import random
 
+# تهيئة Pygame
 pygame.init()
-pygame.mixer.init()
 
-# إعداد الشاشة
+# أبعاد الشاشة
 WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("لعبة زورو القفاز")
+pygame.display.set_caption("لعبة قفز البنات")
 
 # الألوان
 BROWN = (139, 69, 19)
-RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # الخط
 font = pygame.font.SysFont(None, 36)
 
-# تحميل صورة الخلفية وتعديل حجمها
+# تحميل صورة الخلفية
 background = pygame.image.load("background.jpg")
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-# تحميل صورة اللاعب وتعديل حجمها
+# تحميل صورة اللاعب
 player_image = pygame.image.load("player.png")
 player_image = pygame.transform.scale(player_image, (50, 50))
 
-# تحميل صوت القفز
-jump_sound = pygame.mixer.Sound("jump.wav")
+# تحميل صور العقبات
+obstacle_images = [
+    pygame.transform.scale(pygame.image.load("crate.png"), (50, 50)),
+    pygame.transform.scale(pygame.image.load("chest.png"), (50, 50)),
+]
+
+# تحميل صوت القفز (اختياري)
+try:
+    jump_sound = pygame.mixer.Sound("jump.wav")
+except:
+    jump_sound = None
 
 # إعداد الأرض
 ground_y = 350
 
+# إعداد اللاعب
+player_x = 100
+player_y = ground_y
+player_velocity = 0
+gravity = 1
+jump_strength = -15
+is_jumping = False
+
+# إعداد العقبات
+obstacles = []
+obstacle_speed = 5
+spawn_obstacle_event = pygame.USEREVENT + 1
+pygame.time.set_timer(spawn_obstacle_event, 1500)
+
+# النقاط
+score = 0
+
+# حلقة اللعبة
+running = True
 clock = pygame.time.Clock()
 
-def reset_game():
-    global player_rect, obstacle, player_velocity, is_jumping, score, scored
-    player_rect = player_image.get_rect()
-    player_rect.topleft = (100, 300)
-
-    obstacle = pygame.Rect(800, ground_y - 50, 50, 50)
-
-    player_velocity = 0
-    is_jumping = False
-    score = 0
-    scored = False
-
-reset_game()
-running = True
-game_over = False
-
 while running:
-    screen.blit(background, (0, 0))  # رسم الخلفية
+    screen.blit(background, (0, 0))
 
+    # الأحداث
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == spawn_obstacle_event:
+            image = random.choice(obstacle_images)
+            rect = image.get_rect(midbottom=(WIDTH, ground_y))
+            obstacles.append((image, rect))
 
-        # الضغط على زر المسافة أو الشاشة للقفز
-        if not game_over:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                if not is_jumping:
-                    is_jumping = True
-                    player_velocity = -15
-                    jump_sound.play()
+    # تحكم اللاعب
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE] and not is_jumping:
+        player_velocity = jump_strength
+        is_jumping = True
+        if jump_sound:
+            jump_sound.play()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if not is_jumping:
-                    is_jumping = True
-                    player_velocity = -15
-                    jump_sound.play()
-        else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if restart_button.collidepoint(mouse_pos):
-                    reset_game()
-                    game_over = False
+    # تحديث موقع اللاعب
+    player_velocity += gravity
+    player_y += player_velocity
+    if player_y >= ground_y:
+        player_y = ground_y
+        is_jumping = False
 
-    if not game_over:
-        if is_jumping:
-            player_rect.y += int(player_velocity)
-            player_velocity += 0.8
-            if player_rect.y >= ground_y - player_rect.height:
-                player_rect.y = ground_y - player_rect.height
-                is_jumping = False
+    # رسم اللاعب
+    screen.blit(player_image, (player_x, player_y))
 
-        obstacle.x -= 5
-        if obstacle.right < 0:
-            obstacle.left = WIDTH
-            scored = False
+    # تحديث العقبات
+    for obstacle in obstacles[:]:
+        obstacle[1].x -= obstacle_speed
+        screen.blit(obstacle[0], obstacle[1])
 
-        if not scored and obstacle.right < player_rect.left:
+        # تصادم
+        player_rect = pygame.Rect(player_x, player_y, 50, 50)
+        if player_rect.colliderect(obstacle[1]):
+            running = False
+
+        # تخطي العقبة
+        if obstacle[1].x + 50 < player_x and not hasattr(obstacle[1], 'counted'):
             score += 1
-            scored = True
-
-        if player_rect.colliderect(obstacle):
-            game_over = True
-
-    # رسم الأرض
-    pygame.draw.rect(screen, BROWN, (0, ground_y, WIDTH, HEIGHT - ground_y))
-
-    # رسم اللاعب والعقبة
-    screen.blit(player_image, player_rect)
-    pygame.draw.rect(screen, RED, obstacle)
+            setattr(obstacle[1], 'counted', True)
 
     # رسم النقاط
-    score_text = font.render("نقاطك: " + str(score), True, BLACK)
+    score_text = font.render(f"النقاط: {score}", True, BLACK)
     screen.blit(score_text, (10, 10))
-
-    # إذا خسر اللاعب
-    if game_over:
-        game_over_text = font.render("Game Over! نقاطك: " + str(score), True, BLACK)
-        screen.blit(game_over_text, (WIDTH // 2 - 150, HEIGHT // 2 - 60))
-
-        # زر إعادة اللعب
-        restart_button = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2, 200, 50)
-        pygame.draw.rect(screen, WHITE, restart_button)
-        pygame.draw.rect(screen, BLACK, restart_button, 2)
-        restart_text = font.render("أعد اللعب", True, BLACK)
-        screen.blit(restart_text, (restart_button.x + 40, restart_button.y + 10))
 
     pygame.display.flip()
     clock.tick(60)
 
 pygame.quit()
-sys.exit()
