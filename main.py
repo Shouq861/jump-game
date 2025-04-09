@@ -1,9 +1,10 @@
-import pygame
+import pygame "
 import sys
 import random
 
 pygame.init()
 pygame.mixer.init()
+
 
 # إعداد الشاشة
 WIDTH, HEIGHT = 800, 400
