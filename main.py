@@ -15,6 +15,7 @@ BROWN = (139, 69, 19)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+
 # الخط
 font = pygame.font.SysFont(None, 36)
 
