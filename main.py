@@ -32,6 +32,7 @@ obstacle_images = [
     pygame.transform.scale(pygame.image.load("chest.png"), (50, 50)),
 ]
 
+
 # تحميل صوت القفز وصوت التصادم (اختياري)
 try:
     jump_sound = pygame.mixer.Sound("jump.wav")
